@@ -26,9 +26,9 @@
 |---|---|
 | ![Admin Destinations](./screenshots/admin-destinations.png) | ![Admin Cities](./screenshots/admin-cities.png) |
 
-| Admin — Quotations | Staff Management |
+| Admin — services | services Management |
 |---|---|
-| ![Admin Quotations](./screenshots/admin-quotations.png) | ![Staff](./screenshots/admin-staff.png) |
+| ![Admin services](./screenshots/admin-services.png) | ![Staff](./screenshots/admin-services.png) |
 
 ---
 
