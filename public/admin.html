@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Editorial Voyager | Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#00327d",
+        "primary-container": "#0047ab",
+        "primary-fixed": "#dae2ff",
+        "on-primary": "#ffffff",
+        "on-primary-container": "#a5bdff",
+        "on-primary-fixed-variant": "#00419e",
+        "secondary": "#006a6a",
+        "secondary-container": "#90efef",
+        "on-secondary": "#ffffff",
+        "on-secondary-container": "#006e6e",
+        "tertiary": "#602400",
+        "tertiary-container": "#843500",
+        "on-tertiary-container": "#ffaa80",
+        "surface": "#faf8ff",
+        "surface-container-lowest": "#ffffff",
+        "surface-container-low": "#f3f3fc",
+        "surface-container": "#ededf6",
+        "surface-container-high": "#e7e7f0",
+        "surface-container-highest": "#e2e2eb",
+        "surface-variant": "#e2e2eb",
+        "on-surface": "#191b22",
+        "on-surface-variant": "#434653",
+        "outline": "#737784",
+        "outline-variant": "#c3c6d5",
+        "surface-tint": "#2559bd",
+        "background": "#faf8ff",
+        "on-background": "#191b22",
+        "error": "#ba1a1a",
+        "on-error": "#ffffff",
+      },
+      fontFamily: {
+        "headline": ["Manrope", "sans-serif"],
+        "body": ["Inter", "sans-serif"],
+      }
+    }
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+    line-height: 1;
+  }
+  body { font-family: 'Inter', sans-serif; }
+  h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Alerts */
+  .alert { padding:12px 18px; border-radius:12px; font-size:14px; font-weight:500; box-shadow:0 4px 16px rgba(0,0,0,.12); animation:slideIn .3s ease; margin-bottom:8px; }
+  @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+  .alert-success { background:#dcfce7; color:#166534; border-left:4px solid #22c55e; }
+  .alert-error   { background:#fee2e2; color:#991b1b; border-left:4px solid #ef4444; }
+  .alert-info    { background:#dbeafe; color:#1e40af; border-left:4px solid #3b82f6; }
+
+  /* View sections */
+  .view-section { display:none; }
+  .view-section.active { display:block; }
+
+  /* Tabs */
+  .tab-link { padding:12px 0; font-size:14px; font-weight:600; border-bottom:2px solid transparent; color:#64748b; cursor:pointer; white-space:nowrap; transition:all .2s; }
+  .tab-link:hover { color:#00327d; }
+  .tab-link.active { color:#00327d; border-bottom-color:#00327d; }
+
+  /* Tables */
+  .data-table { width:100%; border-collapse:collapse; }
+  .data-table th { padding:14px 16px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#434653; background:#ededf6; }
+  .data-table td { padding:14px 16px; font-size:13px; border-bottom:1px solid #ededf6; vertical-align:middle; }
+  .data-table tr:last-child td { border-bottom:none; }
+  .data-table tr:hover td { background:#f3f3fc; }
+
+  /* Status badges */
+  .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; }
+  .badge-featured { background:#90efef; color:#006e6e; }
+  .badge-standard { background:#e2e2eb; color:#434653; }
+  .badge-draft     { background:#e2e2eb; color:#434653; }
+  .badge-confirmed { background:#dcfce7; color:#166534; }
+  .badge-cancelled { background:#fee2e2; color:#991b1b; }
+
+  /* Action buttons */
+  .action-btn { padding:6px 10px; border-radius:8px; border:none; cursor:pointer; font-size:12px; font-weight:600; transition:all .2s; }
+  .action-btn-danger { background:#fee2e2; color:#991b1b; }
+  .action-btn-danger:hover { background:#fecaca; }
+  .action-btn-primary { background:#dae2ff; color:#00327d; }
+  .action-btn-primary:hover { background:#b1c5ff; }
+
+  /* Form inputs */
+  .form-input {
+    width:100%; background:#fff; border:1px solid #c3c6d5; border-radius:12px; padding:10px 14px; font-size:14px; outline:none; transition:all .2s;
+  }
+  .form-input:focus { border-color:#00327d; box-shadow:0 0 0 3px rgba(0,50,125,.08); }
+  .form-label { display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#434653; margin-bottom:6px; margin-left:2px; }
+
+  /* Stat cards */
+  .stat-card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+  .stat-value { font-size:36px; font-weight:800; color:#00327d; font-family:'Manrope',sans-serif; margin-top:4px; }
+
+  /* Spinner */
+  .spinner { width:18px; height:18px; border:2px solid #e2e2eb; border-top-color:#00327d; border-radius:50%; animation:spin .7s linear infinite; display:inline-block; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+</style>
+</head>
+<body class="bg-background text-on-background">
+
+<!-- ===== ALERTS ===== -->
+<div id="alertContainer" class="fixed top-4 right-4 z-50 w-80"></div>
+
+<!-- ===== TOP APP BAR ===== -->
+<header class="flex flex-col w-full bg-surface-container-lowest fixed top-0 z-40 border-b border-outline-variant/30 shadow-sm">
+  <div class="flex justify-between items-center w-full px-8 h-16">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-primary" style="font-size:24px">travel_explore</span>
+      <span class="text-lg font-bold text-primary font-headline">The Editorial Voyager</span>
+      <span class="text-xs text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full font-medium ml-1">Admin</span>
+    </div>
+    <div class="hidden md:flex flex-1 max-w-sm mx-8">
+      <div class="relative w-full">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-size:18px">search</span>
+        <input id="globalSearch" class="w-full bg-surface-container border-none rounded-full py-2 pl-9 pr-4 focus:ring-2 focus:ring-primary text-sm transition-all" placeholder="Search destinations, quotations..." type="text">
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+        <span class="material-symbols-outlined" style="font-size:22px">notifications</span>
+      </button>
+      <a href="/" class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors" title="Back to Quotation System">
+        <span class="material-symbols-outlined" style="font-size:22px">home</span>
+      </a>
+      <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold text-xs" id="userAvatar">AD</div>
+    </div>
+  </div>
+
+  <!-- Horizontal Tab Navigation -->
+  <nav class="flex items-center px-8 border-t border-outline-variant/20 overflow-x-auto no-scrollbar gap-8">
+    <a class="tab-link active" data-view="destinations">Destinations</a>
+    <a class="tab-link" data-view="cities">Cities & Services</a>
+    <a class="tab-link" data-view="quotations">Quotations</a>
+    <a class="tab-link" data-view="staff">Staff</a>
+    <a class="tab-link ml-auto text-primary" href="/">← Quotation System</a>
+  </nav>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="pt-28 min-h-screen bg-background">
+  <main class="p-4 md:p-10 max-w-7xl mx-auto">
+
+    <!-- ===== DESTINATIONS VIEW ===== -->
+    <div class="view-section active" id="view-destinations">
+      <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div class="max-w-xl">
+          <h1 class="font-headline text-4xl font-extrabold text-on-surface leading-tight">Manage Your Horizons</h1>
+          <p class="mt-3 text-on-surface-variant">Organize global destinations and boutique services into seamless editorial experiences.</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="openAddDestModal()"
+                  class="bg-surface-container-highest hover:bg-surface-container-high text-primary px-5 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all">
+            <span class="material-symbols-outlined" style="font-size:20px">add_circle</span>
+            Add Destination
+          </button>
+        </div>
+      </header>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Destinations Table -->
+        <div class="lg:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="font-headline text-xl font-bold">Active Destinations</h3>
+            <button onclick="loadDestinations()" class="p-2 hover:bg-surface-container rounded-lg transition-colors" title="Refresh">
+              <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px">refresh</span>
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Destination</th>
+                  <th>Cities</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="destinationsBody">
+                <tr><td colspan="5" class="text-center py-8 text-on-surface-variant">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Quick Add Destination Sidebar -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+          <div class="bg-surface-container-low rounded-2xl p-6 border border-outline-variant/20 shadow-sm">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+                <span class="material-symbols-outlined" style="font-size:20px">location_on</span>
+              </div>
+              <h3 class="font-headline text-lg font-bold">Quick Add Destination</h3>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="form-label">Destination Name</label>
+                <input type="text" id="newDestName" placeholder="e.g., Morocco" class="form-input">
+              </div>
+              <div>
+                <label class="form-label">Description (optional)</label>
+                <textarea id="newDestDesc" placeholder="Brief description..." class="form-input" rows="2" style="resize:none"></textarea>
+              </div>
+              <button onclick="createDestination()"
+                      class="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-widest text-white transition-all hover:opacity-90 active:scale-95"
+                      style="background:linear-gradient(135deg,#00327d,#0047ab)">
+                Register Destination
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CITIES VIEW ===== -->
+    <div class="view-section" id="view-cities">
+      <header class="mb-10">
+        <h1 class="font-headline text-4xl font-extrabold text-on-surface leading-tight">Cities & Services</h1>
+        <p class="mt-3 text-on-surface-variant">Add cities to destinations and catalog daily services with fixed rates.</p>
+      </header>
+
+      <!-- Cities Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+        <!-- Add New City -->
+        <div class="bg-surface-container-low rounded-2xl p-8 border border-outline-variant/20 shadow-sm">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+              <span class="material-symbols-outlined" style="font-size:20px">domain</span>
+            </div>
+            <h3 class="font-headline text-xl font-bold">Add New City</h3>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="form-label">Destination Parent</label>
+              <select id="cityDestSelect" class="form-input" style="cursor:pointer">
+                <option value="">Select destination...</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">City Name</label>
+              <input type="text" id="newCityName" placeholder="e.g., Marrakech" class="form-input">
+            </div>
+            <button onclick="addCityToDestination()"
+                    class="w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest text-white transition-all hover:opacity-90"
+                    style="background:linear-gradient(135deg,#00327d,#0047ab)">
+              Register City
+            </button>
+          </div>
+        </div>
+
+        <!-- Cities List -->
+        <div class="bg-surface-container-lowest rounded-2xl p-8 shadow-sm">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+                <span class="material-symbols-outlined" style="font-size:20px">map</span>
+              </div>
+              <h3 class="font-headline text-xl font-bold">Cities by Destination</h3>
+            </div>
+            <button onclick="loadCitiesList()" class="p-2 hover:bg-surface-container rounded-lg">
+              <span class="material-symbols-outlined text-on-surface-variant" style="font-size:18px">refresh</span>
+            </button>
+          </div>
+          <div id="citiesListContainer" class="space-y-4 max-h-96 overflow-y-auto no-scrollbar">
+            <p class="text-sm text-on-surface-variant text-center py-4">Loading cities...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="border-t border-outline-variant/30 mb-10"></div>
+
+      <!-- Services Catalog Section -->
+      <div class="mb-6">
+        <h2 class="font-headline text-2xl font-bold text-on-surface">Daily Service Catalog</h2>
+        <p class="mt-2 text-on-surface-variant text-sm">Define available services per city with fixed rates. These appear as quick-select options when building quotations.</p>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Add City Service -->
+        <div class="bg-surface-container-low rounded-2xl p-8 border border-outline-variant/20 shadow-sm">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:#843500;color:#ffaa80;">
+              <span class="material-symbols-outlined" style="font-size:20px">room_service</span>
+            </div>
+            <h3 class="font-headline text-xl font-bold">Add Service</h3>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="form-label">Destination</label>
+              <select id="svcDestSelect" class="form-input" style="cursor:pointer" onchange="populateSvcCitySelect()">
+                <option value="">Select destination...</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">City</label>
+              <select id="svcCitySelect" class="form-input" style="cursor:pointer">
+                <option value="">Select city first...</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Service Name</label>
+              <input type="text" id="newSvcName" placeholder="e.g., Airport Transfer to Hotel" class="form-input">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Service Type</label>
+                <select id="newSvcType" class="form-input" style="cursor:pointer">
+                  <option value="AirportTransfer">Airport Transfer</option>
+                  <option value="DayTour">Day Tour</option>
+                  <option value="HotelTransfer">Hotel/Station Transfer</option>
+                  <option value="TourGuide">Tour Guide</option>
+                  <option value="Visa">Visa Service</option>
+                  <option value="CarRental">Car Rental</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Rate (USD)</label>
+                <input type="number" id="newSvcRate" placeholder="0.00" min="0" step="0.01" class="form-input">
+              </div>
+            </div>
+            <button onclick="addCityService()"
+                    class="w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest text-white transition-all hover:opacity-90"
+                    style="background:linear-gradient(135deg,#602400,#843500)">
+              Add Service to Catalog
+            </button>
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="exportServicesCsv()"
+                      class="py-3 rounded-xl font-semibold text-xs uppercase tracking-widest transition-all hover:opacity-80 border border-outline-variant/60 text-on-surface-variant bg-surface-container">
+                📤 Export CSV
+              </button>
+              <label class="py-3 rounded-xl font-semibold text-xs uppercase tracking-widest text-center cursor-pointer transition-all hover:opacity-80 text-white"
+                     style="background:linear-gradient(135deg,#006a6a,#009898)">
+                📥 Import CSV
+                <input type="file" id="importCsvInput" accept=".csv" style="display:none" onchange="importServicesCsv(this)">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Services List -->
+        <div class="bg-surface-container-lowest rounded-2xl p-8 shadow-sm">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+                <span class="material-symbols-outlined" style="font-size:20px">checklist</span>
+              </div>
+              <h3 class="font-headline text-xl font-bold">Services Catalog</h3>
+            </div>
+            <button onclick="loadServicesList()" class="p-2 hover:bg-surface-container rounded-lg">
+              <span class="material-symbols-outlined text-on-surface-variant" style="font-size:18px">refresh</span>
+            </button>
+          </div>
+          <div id="servicesListContainer" class="space-y-4 max-h-[480px] overflow-y-auto no-scrollbar">
+            <p class="text-sm text-on-surface-variant text-center py-4">Loading services...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== QUOTATIONS VIEW ===== -->
+    <div class="view-section" id="view-quotations">
+      <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 class="font-headline text-4xl font-extrabold text-on-surface leading-tight">Quotations</h1>
+          <p class="mt-3 text-on-surface-variant">Browse all quotations and export data for reporting.</p>
+        </div>
+        <button onclick="exportCSV()"
+                class="bg-secondary text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-md hover:opacity-90 transition-all">
+          <span class="material-symbols-outlined" style="font-size:20px">download</span>
+          Export CSV
+        </button>
+      </header>
+
+      <!-- Filters -->
+      <div class="bg-surface-container-lowest rounded-xl p-6 mb-6 shadow-sm">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label class="form-label">Destination</label>
+            <input type="text" id="qFilterDest" placeholder="Filter..." class="form-input" style="padding:8px 12px;font-size:13px">
+          </div>
+          <div>
+            <label class="form-label">Status</label>
+            <select id="qFilterStatus" class="form-input" style="padding:8px 12px;font-size:13px;cursor:pointer">
+              <option value="">All</option>
+              <option value="draft">Draft</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">From Date</label>
+            <input type="date" id="qFilterDateStart" class="form-input" style="padding:8px 12px;font-size:13px">
+          </div>
+          <div>
+            <label class="form-label">To Date</label>
+            <input type="date" id="qFilterDateEnd" class="form-input" style="padding:8px 12px;font-size:13px">
+          </div>
+        </div>
+        <div class="flex gap-3 mt-4">
+          <button onclick="loadQuotations()" class="px-5 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:opacity-90 flex items-center gap-2">
+            <span class="material-symbols-outlined" style="font-size:16px">search</span> Search
+          </button>
+          <button onclick="clearQFilters()" class="px-5 py-2 bg-surface-container text-on-surface rounded-xl text-sm font-bold hover:bg-surface-container-high">Clear</button>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Ref ID</th>
+                <th>Destination</th>
+                <th>Agent</th>
+                <th>Pax</th>
+                <th class="text-right">Total</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="quotationsBody">
+              <tr><td colspan="8" class="text-center py-8 text-on-surface-variant">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== STAFF VIEW ===== -->
+    <div class="view-section" id="view-staff">
+      <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 class="font-headline text-4xl font-extrabold text-on-surface leading-tight">Staff Management</h1>
+          <p class="mt-3 text-on-surface-variant">Manage travel agents and admin users.</p>
+        </div>
+        <button onclick="loadUsers()" class="bg-surface-container-highest hover:bg-surface-container-high text-primary px-5 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all">
+          <span class="material-symbols-outlined" style="font-size:20px">refresh</span> Refresh
+        </button>
+      </header>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Staff Table -->
+        <div class="lg:col-span-2 bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersBody">
+                <tr><td colspan="4" class="text-center py-8 text-on-surface-variant">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Add Staff -->
+        <div class="bg-surface-container-low rounded-2xl p-6 border border-outline-variant/20 shadow-sm h-fit">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+              <span class="material-symbols-outlined" style="font-size:20px">person_add</span>
+            </div>
+            <h3 class="font-headline text-lg font-bold">Register Staff</h3>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="form-label">Full Name</label>
+              <input type="text" id="newStaffName" placeholder="Agent name" class="form-input">
+            </div>
+            <div>
+              <label class="form-label">Email</label>
+              <input type="email" id="newStaffEmail" placeholder="agent@company.com" class="form-input">
+            </div>
+            <div>
+              <label class="form-label">Password</label>
+              <input type="password" id="newStaffPassword" placeholder="••••••••" class="form-input">
+            </div>
+            <div>
+              <label class="form-label">Role</label>
+              <select id="newStaffRole" class="form-input" style="cursor:pointer">
+                <option value="agent">Agent</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <button onclick="registerStaff()"
+                    class="w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest text-white transition-all hover:opacity-90"
+                    style="background:linear-gradient(135deg,#006a6a,#009898)">
+              Register Staff Member
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== ADD DESTINATION MODAL ===== -->
+<div id="addDestModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="font-headline text-xl font-bold">New Destination</h3>
+      <button onclick="closeAddDestModal()" class="p-2 hover:bg-surface-container rounded-full">
+        <span class="material-symbols-outlined" style="font-size:20px">close</span>
+      </button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="form-label">Destination Name <span class="text-red-500">*</span></label>
+        <input type="text" id="modalDestName" placeholder="e.g., Morocco" class="form-input">
+      </div>
+      <div>
+        <label class="form-label">Description</label>
+        <textarea id="modalDestDesc" placeholder="Brief description..." class="form-input" rows="3" style="resize:none"></textarea>
+      </div>
+      <div>
+        <label class="form-label">Initial Cities (comma-separated)</label>
+        <input type="text" id="modalDestCities" placeholder="e.g., Marrakech, Casablanca, Fes" class="form-input">
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button onclick="closeAddDestModal()" class="flex-1 py-3 bg-surface-container text-on-surface rounded-xl font-bold text-sm">Cancel</button>
+        <button onclick="createDestinationModal()" class="flex-1 py-3 text-white rounded-xl font-bold text-sm transition-all hover:opacity-90" style="background:linear-gradient(135deg,#00327d,#0047ab)">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="js/admin.js"></script>
+</body>
+</html>

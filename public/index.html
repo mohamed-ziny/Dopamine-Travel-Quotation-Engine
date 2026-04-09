@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Travel Curator | Quotation System</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#00327d",
+        "primary-container": "#0047ab",
+        "primary-fixed": "#dae2ff",
+        "primary-fixed-dim": "#b1c5ff",
+        "on-primary": "#ffffff",
+        "on-primary-container": "#a5bdff",
+        "on-primary-fixed": "#001946",
+        "on-primary-fixed-variant": "#00419e",
+        "secondary": "#006a6a",
+        "secondary-container": "#90efef",
+        "on-secondary": "#ffffff",
+        "on-secondary-container": "#006e6e",
+        "tertiary": "#602400",
+        "tertiary-container": "#843500",
+        "on-tertiary": "#ffffff",
+        "on-tertiary-container": "#ffaa80",
+        "surface": "#faf8ff",
+        "surface-dim": "#d9d9e2",
+        "surface-bright": "#faf8ff",
+        "surface-container-lowest": "#ffffff",
+        "surface-container-low": "#f3f3fc",
+        "surface-container": "#ededf6",
+        "surface-container-high": "#e7e7f0",
+        "surface-container-highest": "#e2e2eb",
+        "surface-variant": "#e2e2eb",
+        "on-surface": "#191b22",
+        "on-surface-variant": "#434653",
+        "outline": "#737784",
+        "outline-variant": "#c3c6d5",
+        "inverse-surface": "#2e3037",
+        "inverse-on-surface": "#f0f0f9",
+        "inverse-primary": "#b1c5ff",
+        "surface-tint": "#2559bd",
+        "background": "#faf8ff",
+        "on-background": "#191b22",
+        "error": "#ba1a1a",
+        "error-container": "#ffdad6",
+        "on-error": "#ffffff",
+        "on-error-container": "#93000a",
+      },
+      fontFamily: {
+        "headline": ["Manrope", "sans-serif"],
+        "body": ["Inter", "sans-serif"],
+      },
+      borderRadius: {
+        "xl": "0.75rem",
+        "2xl": "1rem",
+      }
+    }
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+    line-height: 1;
+  }
+  body { font-family: 'Inter', sans-serif; }
+  h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ── Alert styles (used by app.js dynamically) ── */
+  .alert {
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    animation: slideIn .3s ease;
+  }
+  @keyframes slideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+  .alert-success { background:#dcfce7; color:#166534; border-left:4px solid #22c55e; }
+  .alert-error   { background:#fee2e2; color:#991b1b; border-left:4px solid #ef4444; }
+  .alert-info    { background:#dbeafe; color:#1e40af; border-left:4px solid #3b82f6; }
+  .alert-warning { background:#fef9c3; color:#854d0e; border-left:4px solid #eab308; }
+
+  /* ── API status ── */
+  #apiStatus { font-size:12px; display:flex; align-items:center; gap:6px; padding:8px 16px; }
+  #apiStatus .status-dot { width:8px; height:8px; border-radius:50%; background:#facc15; flex-shrink:0; }
+  #apiStatus.error .status-dot { background:#ef4444; }
+
+  /* ── Edit banner ── */
+  #editBanner { display:none; }
+  #editBanner.active { display:flex; }
+
+  /* ── Hotel table inputs ── */
+  .hotel-input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 13px;
+    width: 100%;
+    transition: border-color .2s;
+    outline: none;
+  }
+  .hotel-input:focus { border-bottom-color: #00327d; background: #f3f3fc; }
+  select.hotel-input { cursor:pointer; }
+
+  /* ── Service entries (created by app.js) ── */
+  .service-entry {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    margin-bottom: 12px;
+  }
+  .service-entry-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .service-entry-header select {
+    flex: 1;
+    min-width: 180px;
+    background: #ededf6;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-weight: 600;
+    color: #191b22;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+  }
+  .service-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .service-fields .form-group { display:flex; flex-direction:column; gap:4px; }
+  .service-fields .form-group label { font-size:11px; font-weight:700; color:#434653; text-transform:uppercase; letter-spacing:.05em; }
+  .service-fields .form-group input {
+    background: #f3f3fc;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    outline: none;
+    transition: background .2s;
+  }
+  .service-fields .form-group input:focus { background: #e7e7f0; }
+  .service-total-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #ededf6;
+    font-size: 13px;
+  }
+  .total-val { font-weight:700; color:#00327d; font-size:15px; }
+  .attach-btn {
+    background: #ededf6;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background .2s;
+  }
+  .attach-btn:hover { background: #e2e2eb; }
+
+  /* ── Buttons from app.js ── */
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:600; font-size:13px; transition:all .2s; }
+  .btn-sm { padding:5px 10px; font-size:12px; }
+  .btn-primary { background:#00327d; color:#fff; }
+  .btn-primary:hover { background:#0047ab; }
+  .btn-success { background:#006a6a; color:#fff; }
+  .btn-success:hover { background:#005555; }
+  .btn-danger { background:#fee2e2; color:#991b1b; }
+  .btn-danger:hover { background:#fecaca; }
+  .btn-ghost { background:#ededf6; color:#191b22; }
+  .btn-ghost:hover { background:#e2e2eb; }
+
+  /* ── Children ages (created by app.js) ── */
+  .children-ages-row { display:flex; flex-wrap:wrap; gap:16px; margin-top:12px; padding:16px; background:#f3f3fc; border-radius:12px; }
+  .age-item { display:flex; flex-direction:column; gap:4px; }
+  .age-item label { font-size:11px; font-weight:700; color:#434653; text-transform:uppercase; }
+  .age-item input { width:70px; background:#fff; border:none; border-radius:8px; padding:8px; font-size:13px; text-align:center; outline:none; }
+
+  /* ── Status badges (history) ── */
+  .status-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; }
+  .status-badge.draft     { background:#e2e2eb; color:#434653; }
+  .status-badge.confirmed { background:#dcfce7; color:#166534; }
+  .status-badge.cancelled { background:#fee2e2; color:#991b1b; }
+
+  /* ── History actions ── */
+  .history-actions { display:flex; gap:4px; }
+
+  /* ── Filter inputs ── */
+  .filter-input {
+    background: #f3f3fc;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+    transition: background .2s;
+  }
+  .filter-input:focus { background: #e7e7f0; }
+
+  /* ── Loading spinner ── */
+  .spinner { width:20px; height:20px; border:2px solid #e2e2eb; border-top-color:#00327d; border-radius:50%; animation:spin .7s linear infinite; display:inline-block; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-msg { display:flex; align-items:center; gap:8px; padding:16px 0; color:#434653; font-size:14px; }
+
+  /* ── Itinerary day cards ── */
+  .day-card { background:#f3f3fc; border-radius:16px; overflow:hidden; margin-bottom:12px; }
+  .day-card-header { padding:14px 24px; background:rgba(0,50,125,.05); display:flex; justify-content:space-between; align-items:center; border-left:4px solid #00327d; }
+  .day-card-header .day-num { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#00327d; }
+  .day-card-header .day-title { font-weight:700; color:#191b22; font-size:15px; margin-top:2px; }
+  .day-card-header .day-date { font-size:13px; color:#434653; }
+  .day-services { padding:12px 16px; display:flex; flex-direction:column; gap:8px; }
+  .free-day-label { padding:12px 24px; font-size:13px; color:#434653; font-style:italic; text-align:center; }
+  .add-day-service-btn {
+    margin:0 16px 14px; padding:10px; border:2px dashed #c3c6d5; border-radius:12px;
+    background:transparent; color:#434653; font-size:13px; font-weight:600; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:6px; transition:all .2s; width:calc(100% - 32px);
+  }
+  .add-day-service-btn:hover { border-color:#00327d; color:#00327d; background:rgba(0,50,125,.04); }
+</style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container-low flex flex-col py-6 px-4 z-50 shadow-sm">
+  <div class="px-2 mb-6">
+    <div class="flex items-center space-x-3 mb-1">
+      <span class="material-symbols-outlined text-primary" style="font-size:28px">travel_explore</span>
+      <span class="font-headline font-extrabold text-xl tracking-tight text-primary">Travel Curator</span>
+    </div>
+    <p class="text-xs text-on-surface-variant px-1">Premium Access</p>
+  </div>
+
+  <nav class="flex-1 space-y-2">
+    <a class="sidebar-link active flex items-center px-4 py-3 bg-gradient-to-r from-primary to-primary-container text-white rounded-xl shadow-lg cursor-pointer" onclick="scrollToTop()">
+      <span class="material-symbols-outlined mr-3">add_circle</span>
+      <span class="font-medium">New Quotation</span>
+    </a>
+    <a class="sidebar-link flex items-center px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-xl transition-all cursor-pointer" onclick="scrollToHistory()">
+      <span class="material-symbols-outlined mr-3">drafts</span>
+      <span class="font-medium">Active Drafts</span>
+    </a>
+    <a class="sidebar-link flex items-center px-4 py-3 text-on-surface-variant hover:bg-surface-container rounded-xl transition-all" href="/admin.html">
+      <span class="material-symbols-outlined mr-3">bar_chart</span>
+      <span class="font-medium">Admin Dashboard</span>
+    </a>
+  </nav>
+
+  <div class="pt-4 border-t border-outline-variant/20 space-y-1">
+    <div id="apiStatus">
+      <div class="status-dot"></div>
+      <span>Connecting to API...</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ===== EDIT BANNER ===== -->
+<div id="editBanner" class="fixed top-0 left-64 right-0 z-40 bg-primary text-white py-3 px-8 items-center justify-between shadow-lg">
+  <span class="text-sm font-medium">✏️ <strong>Edit Mode</strong> — Editing quotation <span id="editingRefId" class="font-mono bg-white/20 px-2 py-0.5 rounded"></span></span>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;" onclick="cancelEdit()">✕ Cancel</button>
+</div>
+
+<!-- ===== ALERTS ===== -->
+<div id="alertContainer" class="fixed top-4 right-4 z-50 space-y-2 w-80"></div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="flex-1 ml-64 p-8 min-h-screen" id="main-top">
+
+  <!-- Header -->
+  <header class="flex justify-between items-center mb-10">
+    <div>
+      <h1 class="text-3xl font-extrabold text-primary tracking-tight font-headline">Create New Quotation</h1>
+      <p class="text-on-surface-variant mt-1">Configure premium travel experiences for your clientele.</p>
+    </div>
+    <div class="flex items-center space-x-4">
+      <div class="px-4 py-2 bg-surface-container rounded-full text-sm font-bold text-primary font-mono" id="refId">NEW QUOTATION</div>
+      <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold text-sm">DT</div>
+    </div>
+  </header>
+
+  <!-- ===== CORE LOGISTICS ===== -->
+  <section class="mb-8 bg-surface-container-low rounded-xl p-8">
+    <h2 class="text-xl font-bold mb-6 flex items-center text-on-surface font-headline">
+      <span class="material-symbols-outlined mr-2 text-primary">assignment</span>
+      Core Logistics
+    </h2>
+
+    <!-- Row 1: Destination + Dates + Nights -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div>
+        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Destination <span class="text-red-500">*</span></label>
+        <input type="text" id="destination" list="destinationsList" placeholder="Select destination..."
+               class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all text-sm" autocomplete="off">
+        <datalist id="destinationsList"></datalist>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Check-In Date <span class="text-red-500">*</span></label>
+        <input type="date" id="startDate" class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Check-Out Date <span class="text-red-500">*</span></label>
+        <input type="date" id="endDate" class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Nights</label>
+        <input type="number" id="nights" value="0" min="1" class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary transition-all">
+      </div>
+    </div>
+
+    <!-- Row 2: Pax + Agent -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div>
+        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Adults <span class="text-red-500">*</span></label>
+        <div class="flex items-center bg-surface-container-highest rounded-xl px-1 py-1">
+          <button type="button" onclick="adjustPax('adt',-1)" class="p-2 hover:bg-surface-variant rounded-lg transition-colors">
+            <span class="material-symbols-outlined" style="font-size:18px">remove</span>
+          </button>
+          <input type="number" id="adt" value="1" min="1" class="w-full bg-transparent border-none text-center font-bold focus:ring-0 text-sm">
+          <button type="button" onclick="adjustPax('adt',1)" class="p-2 hover:bg-surface-variant rounded-lg transition-colors">
+            <span class="material-symbols-outlined" style="font-size:18px">add</span>
+          </button>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Children</label>
+        <div class="flex items-center bg-surface-container-highest rounded-xl px-1 py-1">
+          <button type="button" onclick="adjustPax('chd',-1)" class="p-2 hover:bg-surface-variant rounded-lg transition-colors">
+            <span class="material-symbols-outlined" style="font-size:18px">remove</span>
+          </button>
+          <input type="number" id="chd" value="0" min="0" class="w-full bg-transparent border-none text-center font-bold focus:ring-0 text-sm">
+          <button type="button" onclick="adjustPax('chd',1)" class="p-2 hover:bg-surface-variant rounded-lg transition-colors">
+            <span class="material-symbols-outlined" style="font-size:18px">add</span>
+          </button>
+        </div>
+      </div>
+      <div class="md:col-span-2">
+        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Agent Name <span class="text-red-500">*</span></label>
+        <input type="text" id="userName" list="usersList" placeholder="Select or enter your name..."
+               class="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all text-sm" autocomplete="off">
+        <datalist id="usersList"></datalist>
+      </div>
+    </div>
+
+    <!-- Children Ages (populated by app.js) -->
+    <div id="childrenAgesContainer"></div>
+
+    <!-- Hidden compat fields for app.js edit function -->
+    <input type="hidden" id="salesStaff">
+    <input type="hidden" id="opsStaff">
+  </section>
+
+  <!-- ===== HOTEL ACCOMMODATION ===== -->
+  <section class="mb-8">
+    <div class="flex justify-between items-end mb-6">
+      <div>
+        <h2 class="text-xl font-bold flex items-center text-on-surface font-headline">
+          <span class="material-symbols-outlined mr-2 text-primary">hotel</span>
+          Hotel Accommodation
+        </h2>
+        <p class="text-sm text-on-surface-variant">Selected properties for the duration of the stay.</p>
+      </div>
+      <button onclick="addHotel()" class="flex items-center text-primary font-bold text-sm hover:underline transition-all">
+        <span class="material-symbols-outlined mr-1" style="font-size:18px">add_circle</span> Add Hotel
+      </button>
+    </div>
+    <div class="bg-surface-container-lowest rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table id="hotelTable" class="w-full text-left">
+          <thead class="bg-surface-container">
+            <tr>
+              <th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">City</th>
+              <th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Property Name</th>
+              <th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Check-In</th>
+              <th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Nts</th>
+              <th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Check-Out</th>
+              <th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Room Type</th>
+              <th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Rooms</th>
+              <th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Meal</th>
+              <th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-right whitespace-nowrap">Rate (USD)</th>
+              <th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Cancel Policy</th>
+              <th class="px-4 py-4"></th>
+            </tr>
+          </thead>
+          <tbody id="hotelBody" class="divide-y divide-surface-container">
+            <tr class="hover:bg-surface-container-low transition-colors group">
+              <td class="px-4 py-3"><input type="text" class="h-city hotel-input" list="citiesList" placeholder="Select city…" autocomplete="off"></td>
+              <td class="px-4 py-3"><input type="text" class="h-name hotel-input" list="hotelsList" placeholder="Hotel name" autocomplete="off"></td>
+              <td class="px-4 py-3"><input type="date" class="h-checkin hotel-input"></td>
+              <td class="px-4 py-3"><input type="number" class="h-nights hotel-input" value="1" min="1" style="width:56px"></td>
+              <td class="px-4 py-3"><input type="date" class="h-checkout hotel-input"></td>
+              <td class="px-4 py-3"><input type="text" class="h-roomtype hotel-input" placeholder="Room type"></td>
+              <td class="px-4 py-3"><input type="number" class="h-rooms hotel-input" value="1" min="1" style="width:56px"></td>
+              <td class="px-4 py-3">
+                <select class="h-mealplan hotel-input">
+                  <option>RO</option><option>BB</option><option>HB</option><option>FB</option><option>AI</option><option>Iftar</option><option>Suhur</option>
+                </select>
+              </td>
+              <td class="px-4 py-3"><input type="number" class="h-cost hotel-input text-right" value="0" min="0" step="0.01" style="width:90px"></td>
+              <td class="px-4 py-3"><input type="text" class="h-cancel hotel-input" placeholder="Policy"></td>
+              <td class="px-4 py-3">
+                <button class="btn btn-sm btn-danger opacity-0 group-hover:opacity-100 transition-opacity" onclick="removeRow(this,'hotel')">✕</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <datalist id="citiesList"></datalist>
+        <datalist id="hotelsList"></datalist>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ITINERARY (day-by-day) ===== -->
+  <section class="mb-12">
+    <div class="flex justify-between items-end mb-6">
+      <div>
+        <h2 class="text-xl font-bold flex items-center text-on-surface font-headline">
+          <span class="material-symbols-outlined mr-2 text-primary">calendar_month</span>
+          Itinerary
+        </h2>
+        <p class="text-sm text-on-surface-variant">Daily schedule — auto-generated from your travel dates.</p>
+      </div>
+    </div>
+
+    <!-- Day cards injected by JS -->
+    <div id="itineraryDaysContainer">
+      <div id="itineraryPlaceholder" class="py-14 text-center bg-surface-container-lowest rounded-xl text-on-surface-variant">
+        <span class="material-symbols-outlined block mb-2" style="font-size:40px">event_note</span>
+        <p class="text-sm">Set check-in and check-out dates above to generate the itinerary.</p>
+      </div>
+    </div>
+
+    <!-- Hidden textarea for backward-compat (PDF / API) -->
+    <textarea id="itinerary" style="display:none"></textarea>
+  </section>
+
+  <!-- ===== ATTACHED PHOTOS ===== -->
+  <div id="attachmentsCard" class="mb-8" style="display:none">
+    <h2 class="text-xl font-bold flex items-center text-on-surface font-headline mb-4">
+      <span class="material-symbols-outlined mr-2 text-primary">photo_library</span>
+      Attached Photos
+    </h2>
+    <div id="attachmentsContainer" class="flex gap-3 overflow-x-auto pb-2 no-scrollbar"></div>
+  </div>
+
+  <!-- ===== SUMMARY + ACTIONS ===== -->
+  <section class="bg-surface-container p-8 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-8 mb-10">
+    <div class="w-full md:w-auto">
+      <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">Estimated Grand Total</p>
+      <div class="flex items-baseline space-x-2">
+        <span class="text-4xl font-extrabold text-primary font-headline" id="grandTotal">0.00</span>
+        <span class="text-on-surface-variant font-medium">USD</span>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-4 w-full md:w-auto justify-end">
+      <button onclick="resetForm()" class="px-6 py-3 bg-surface-container-highest text-on-surface font-bold rounded-xl hover:bg-surface-variant transition-colors flex items-center">
+        <span class="material-symbols-outlined mr-2" style="font-size:18px">refresh</span> Reset
+      </button>
+      <button id="cancelBtn" onclick="cancelEdit()" style="display:none" class="px-6 py-3 bg-surface-container-highest text-on-surface font-bold rounded-xl hover:bg-surface-variant transition-colors flex items-center">
+        <span class="material-symbols-outlined mr-2" style="font-size:18px">close</span> Cancel Edit
+      </button>
+      <button id="printBtn" onclick="printQuotation()" class="px-6 py-3 bg-secondary text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-md flex items-center">
+        <span class="material-symbols-outlined mr-2" style="font-size:18px">picture_as_pdf</span> Print PDF
+      </button>
+      <button id="saveBtn" onclick="saveQuotation()" class="px-8 py-3 font-bold rounded-xl text-white flex items-center shadow-md hover:shadow-xl transition-all active:scale-95" style="background:linear-gradient(135deg,#00327d,#0047ab)">
+        <span class="material-symbols-outlined mr-2" style="font-size:18px">save</span> Save Quotation
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== QUOTATION HISTORY ===== -->
+  <section id="history-section" class="mb-8">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-bold flex items-center text-on-surface font-headline">
+        <span class="material-symbols-outlined mr-2 text-primary">history</span>
+        Quotation History
+      </h2>
+      <button onclick="loadHistory()" class="flex items-center text-primary font-medium text-sm hover:underline">
+        <span class="material-symbols-outlined mr-1" style="font-size:16px">refresh</span> Refresh
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-surface-container-lowest rounded-xl p-6 mb-4">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <input type="text" id="filterDest" placeholder="Destination..." class="filter-input">
+        <input type="text" id="filterStaff" placeholder="Staff name..." class="filter-input">
+        <input type="date" id="filterDateStart" class="filter-input" title="From date">
+        <input type="date" id="filterDateEnd" class="filter-input" title="To date">
+        <input type="number" id="filterMinCost" placeholder="Min cost" min="0" class="filter-input">
+        <input type="number" id="filterMaxCost" placeholder="Max cost" min="0" class="filter-input">
+      </div>
+      <div class="flex gap-3 mt-4">
+        <button onclick="loadHistory()" class="px-5 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:opacity-90 flex items-center gap-2">
+          <span class="material-symbols-outlined" style="font-size:16px">search</span> Search
+        </button>
+        <button onclick="clearFilters()" class="px-5 py-2 bg-surface-container text-on-surface rounded-xl text-sm font-bold hover:bg-surface-container-high">Clear</button>
+      </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="historyLoading" class="loading-msg" style="display:none">
+      <div class="spinner"></div>
+      Loading quotations...
+    </div>
+
+    <!-- Table -->
+    <div class="bg-surface-container-lowest rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-surface-container">
+            <tr>
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Date</th>
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Ref ID</th>
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Destination</th>
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Staff</th>
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pax</th>
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant text-right">Total</th>
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Status</th>
+              <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody" class="divide-y divide-surface-container">
+            <tr>
+              <td colspan="8" class="px-6 py-10 text-center text-on-surface-variant text-sm">Loading quotations...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-8 text-center text-on-surface-variant border-t border-outline-variant/15 mt-4">
+    <p class="text-xs uppercase tracking-widest font-semibold">The Editorial Voyager • Internal Curation Tool</p>
+  </footer>
+
+</main>
+
+<!-- ===== HIDDEN FILE INPUTS ===== -->
+<input type="file" id="photoUploadInput" accept="image/*" multiple style="display:none">
+<input type="file" id="itemPhotoUploadInput" accept="image/*" multiple style="display:none">
+
+<!-- ===== SCRIPTS ===== -->
+<script>
+  // ── Pax +/- counter buttons ──
+  function adjustPax(id, delta) {
+    const input = document.getElementById(id);
+    const min = parseInt(input.min) || 0;
+    input.value = Math.max(min, (parseInt(input.value) || 0) + delta);
+    input.dispatchEvent(new Event('input'));
+  }
+
+  // ── Smooth scroll helpers ──
+  function scrollToTop() {
+    document.getElementById('main-top').scrollIntoView({ behavior: 'smooth' });
+  }
+  function scrollToHistory() {
+    document.getElementById('history-section').scrollIntoView({ behavior: 'smooth' });
+  }
+</script>
+<script src="js/app.js"></script>
+</body>
+</html>
