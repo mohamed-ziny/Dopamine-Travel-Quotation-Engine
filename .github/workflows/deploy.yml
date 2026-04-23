@@ -1,0 +1,42 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          port: ${{ secrets.DO_SSH_PORT || 22 }}
+          script: |
+            set -e
+            
+            echo "🚀 Starting deployment..."
+            cd /var/www/travel-curator
+            
+            echo "📥 Pulling latest code from GitHub..."
+            git pull origin main
+            
+            echo "📦 Installing dependencies..."
+            npm install --production
+            
+            echo "🔄 Restarting PM2 app..."
+            pm2 restart travel-curator
+            
+            echo "✅ Deployment complete!"
+            echo "📊 Current PM2 status:"
+            pm2 status
+            echo "📝 Recent logs:"
+            pm2 logs travel-curator --lines 20 --nostream

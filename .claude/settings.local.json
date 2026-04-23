@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc:*)",
+      "Bash(cat)",
+      "Read(//tmp/**)",
+      "Bash(grep -r \"production\" /home/zin/Development/travel-quotation-api-FINAL/travel-quotation-api/*.md)"
+    ]
+  }
+}
