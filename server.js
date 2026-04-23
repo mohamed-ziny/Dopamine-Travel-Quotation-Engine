@@ -15,15 +15,19 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Security middleware - disable for development to allow inline scripts
-if (process.env.NODE_ENV === 'production') {
-  app.use(helmet());
-} else {
-  // In development, use relaxed helmet settings
-  app.use(helmet({
-    contentSecurityPolicy: false,
-  }));
-}
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:"],
+      connectSrc: ["'self'"],
+    },
+  },
+}));
 
 // CORS configuration
 const allowedOrigins = process.env.CORS_ORIGINS
